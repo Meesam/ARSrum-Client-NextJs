@@ -20,11 +20,11 @@ import { CookieValueTypes, getCookie } from "cookies-next";
 import React from "react";
 
 const formSchema = z.object({
-  userName: z.string().min(2, {
-    message: "userName must be at least 2 characters.",
+  userName: z.string().min(1, {
+    message: "Please enter the Username",
   }),
-  password: z.string().min(5, {
-    message: "Password must be at least 6 characters.",
+  password: z.string().min(1, {
+    message: "Please enter the Password",
   }),
 });
 
@@ -35,6 +35,9 @@ const LoginPage = () => {
   const [tokenExpiry, setTokenExpiry] = React.useState<
     CookieValueTypes | Promise<CookieValueTypes>
   >(undefined);
+
+  const [isLoginFailed, setIsLoginFailed] = React.useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -55,7 +58,13 @@ const LoginPage = () => {
         userId: resp.userId,
       };
       localStorage.setItem("userInfo", JSON.stringify(userInfo));
-      redirect("/dashboard");
+      if (userInfo.role[0].toLowerCase() === "admin") {
+        redirect("/admin/dashboard");
+      } else {
+        redirect("/user/dashboard");
+      }
+    } else if (resp.status === "Error") {
+      setIsLoginFailed(true);
     }
   };
 
@@ -71,6 +80,11 @@ const LoginPage = () => {
   return (
     <div className="p-10 border border-gray-200 rounded-lg w-96">
       <h1 className="text-2xl font-bold pb-10">Register</h1>
+      {isLoginFailed && (
+        <p className="text-red-500 text-sm pb-5">
+          Incorrect Username or Password! Try again
+        </p>
+      )}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField

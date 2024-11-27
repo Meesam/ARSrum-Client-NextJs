@@ -27,7 +27,9 @@ export const loginUser = async (loginUser: LoginUser) => {
   });
   const cookieStore = await cookies();
   let data: LoginResponseType = await resp.json();
-  cookieStore.set("app-token", data.token);
-  cookieStore.set("token-expiry", data.expiration.toString());
+  if (data.status === "Success") {
+    cookieStore.set("app-token", data.token);
+    cookieStore.set("token-expiry", data.expiration.toString());
+  }
   return data;
 };
