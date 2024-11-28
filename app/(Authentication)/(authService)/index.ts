@@ -30,6 +30,7 @@ export const loginUser = async (loginUser: LoginUser) => {
   if (data.status === "Success") {
     cookieStore.set("app-token", data.token);
     cookieStore.set("token-expiry", data.expiration.toString());
+    cookieStore.set("user-role", JSON.stringify(data.roles));
   }
   return data;
 };

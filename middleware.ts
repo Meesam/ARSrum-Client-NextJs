@@ -1,31 +1,70 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-
-export const middleware = async (request: NextRequest) => {
-  return NextResponse.next();
-};
+import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 // This function can be marked `async` if using `await` inside
-/*export const middleware = async (request: NextRequest) => {
+export const middleware = async (request: NextRequest) => {
   const cookieStore = await cookies();
-  let token = cookieStore.get("app-token");
+  let token: RequestCookie | undefined = cookieStore.get("app-token");
+  let roles: RequestCookie | undefined = cookieStore.get("user-role");
+  let userRole: string[] = [];
+  if (roles && roles.value) {
+    userRole = JSON.parse(roles.value);
+  }
   if (token && token?.value !== "") {
+    switch (userRole[0]) {
+      case "Admin":
+        if (request.nextUrl.pathname.startsWith("/admin")) {
+          return NextResponse.next();
+        } else {
+          if (
+            request.nextUrl.pathname.startsWith("/login") ||
+            request.nextUrl.pathname.startsWith("/register") ||
+            request.nextUrl.pathname === "/"
+          ) {
+            return NextResponse.redirect(
+              new URL("/admin/dashboard", request.url),
+            );
+          } else {
+            if (request.nextUrl.pathname.startsWith("/user")) {
+              return NextResponse.redirect(new URL("/not-found", request.url));
+            }
+          }
+        }
+        break;
+      case "User":
+        if (request.nextUrl.pathname.startsWith("/user")) {
+          return NextResponse.next();
+        } else {
+          if (
+            request.nextUrl.pathname.startsWith("/login") ||
+            request.nextUrl.pathname.startsWith("/register") ||
+            request.nextUrl.pathname === "/"
+          ) {
+            return NextResponse.redirect(
+              new URL("/user/dashboard", request.url),
+            );
+          } else {
+            if (request.nextUrl.pathname.startsWith("/admin")) {
+              return NextResponse.redirect(new URL("/not-found", request.url));
+            }
+          }
+        }
+        break;
+    }
+  } else {
     if (
       request.nextUrl.pathname.startsWith("/login") ||
       request.nextUrl.pathname.startsWith("/register") ||
-      request.nextUrl.pathname.startsWith("/")
+      request.nextUrl.pathname === "/"
     ) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.next();
     }
-    return NextResponse.next();
-  } else {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 };
 
-// See "Matching Paths" below to learn more
 export const config = {
-  matcher: ["/dashboard", "/login"],
-};*/
+  matcher: ["/user/:path*", "/admin/:path*", "/login", "/register", "/"],
+};
