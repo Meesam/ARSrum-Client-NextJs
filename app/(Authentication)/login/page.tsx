@@ -29,13 +29,6 @@ const formSchema = z.object({
 });
 
 const LoginPage = () => {
-  const [appToken, setAppToken] = React.useState<
-    CookieValueTypes | Promise<CookieValueTypes>
-  >(undefined);
-  const [tokenExpiry, setTokenExpiry] = React.useState<
-    CookieValueTypes | Promise<CookieValueTypes>
-  >(undefined);
-
   const [isLoginFailed, setIsLoginFailed] = React.useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -67,15 +60,6 @@ const LoginPage = () => {
       setIsLoginFailed(true);
     }
   };
-
-  React.useEffect(() => {
-    const jwtToken: CookieValueTypes | Promise<CookieValueTypes> =
-      getCookie("app-token");
-    const tokenExpiry: CookieValueTypes | Promise<CookieValueTypes> =
-      getCookie("token-expiry");
-    setAppToken(jwtToken);
-    setTokenExpiry(tokenExpiry);
-  }, []);
 
   return (
     <div className="p-10 border border-gray-200 rounded-lg w-96">

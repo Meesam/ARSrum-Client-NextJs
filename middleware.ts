@@ -2,13 +2,23 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
+import moment from "moment";
 
 // This function can be marked `async` if using `await` inside
 export const middleware = async (request: NextRequest) => {
   const cookieStore = await cookies();
   let token: RequestCookie | undefined = cookieStore.get("app-token");
   let roles: RequestCookie | undefined = cookieStore.get("user-role");
+  let tokenExpiry: RequestCookie | undefined = cookieStore.get("token-expiry");
+  let tokenExpiryDate = null;
   let userRole: string[] = [];
+  if (tokenExpiry && tokenExpiry.value) {
+    tokenExpiryDate = moment(tokenExpiry.value).format("YYYY-MM-DD HH:mm:ss");
+    if (tokenExpiryDate > moment().format("YYYY-MM-DD HH:mm:ss")) {
+      console.log("Token expiry expired");
+    }
+  }
+  console.log("tokenExpiryDate ", tokenExpiryDate);
   if (roles && roles.value) {
     userRole = JSON.parse(roles.value);
   }
